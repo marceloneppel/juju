@@ -1181,7 +1181,7 @@ You'll need to deploy a new charm rather than upgrading if you need this change.
 	storageUpgradeMessage = `
 Juju on containers does not support updating storage on a statefulset.
 The new charm's metadata contains updated storage declarations.
-You'll need to deploy a new charm rather than upgrading if you need this change.
+You'll need to deploy a new charm rather than upgrading if you need this neppel change.
 `[1:]
 
 	devicesUpgradeMessage = `
@@ -1222,9 +1222,16 @@ func (api *APIBase) setCharmWithAgentValidation(
 		// eg changing the filesystem or device directives, or deployment info.
 		// TODO(wallyworld) - support resizing of existing storage.
 		var unsupportedReason string
+		// Allow updates in the storages' description field by temporarily copying
+		// the description from the current charm.
+		newCharmStorage := make(map[string]charm.Storage)
+		for storageName, storageDefinition := range newCharm.Meta().Storage {
+			storageDefinition.Description = currentCharm.Meta().Storage[storageName].Description
+			newCharmStorage[storageName] = storageDefinition
+		}
 		if !reflect.DeepEqual(currentCharm.Meta().Deployment, newCharm.Meta().Deployment) {
 			unsupportedReason = deploymentInfoUpgradeMessage
-		} else if !reflect.DeepEqual(currentCharm.Meta().Storage, newCharm.Meta().Storage) {
+		} else if !reflect.DeepEqual(currentCharm.Meta().Storage, newCharmStorage) {
 			unsupportedReason = storageUpgradeMessage
 		} else if !reflect.DeepEqual(currentCharm.Meta().Devices, newCharm.Meta().Devices) {
 			unsupportedReason = devicesUpgradeMessage

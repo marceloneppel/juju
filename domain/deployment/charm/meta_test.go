@@ -548,20 +548,20 @@ func (s *MetaSuite) TestIfaceExpander(c *tc.C) {
 	// Shorthand is properly rewritten
 	v, err := e.Coerce("http", path)
 	c.Assert(err, tc.IsNil)
-	c.Assert(v, tc.DeepEquals, map[string]any{"interface": "http", "limit": nil, "optional": false, "scope": string(charm.ScopeGlobal)})
+	c.Assert(v, tc.DeepEquals, map[string]any{"interface": "http", "limit": nil, "optional": false, "scope": string(charm.ScopeGlobal), "default": false})
 
 	// Defaults are properly applied
 	v, err = e.Coerce(map[string]any{"interface": "http"}, path)
 	c.Assert(err, tc.IsNil)
-	c.Assert(v, tc.DeepEquals, map[string]any{"interface": "http", "limit": nil, "optional": false, "scope": string(charm.ScopeGlobal)})
+	c.Assert(v, tc.DeepEquals, map[string]any{"interface": "http", "limit": nil, "optional": false, "scope": string(charm.ScopeGlobal), "default": false})
 
 	v, err = e.Coerce(map[string]any{"interface": "http", "limit": 2}, path)
 	c.Assert(err, tc.IsNil)
-	c.Assert(v, tc.DeepEquals, map[string]any{"interface": "http", "limit": int64(2), "optional": false, "scope": string(charm.ScopeGlobal)})
+	c.Assert(v, tc.DeepEquals, map[string]any{"interface": "http", "limit": int64(2), "optional": false, "scope": string(charm.ScopeGlobal), "default": false})
 
 	v, err = e.Coerce(map[string]any{"interface": "http", "optional": true}, path)
 	c.Assert(err, tc.IsNil)
-	c.Assert(v, tc.DeepEquals, map[string]any{"interface": "http", "limit": nil, "optional": true, "scope": string(charm.ScopeGlobal)})
+	c.Assert(v, tc.DeepEquals, map[string]any{"interface": "http", "limit": nil, "optional": true, "scope": string(charm.ScopeGlobal), "default": false})
 
 	// Invalid data raises an error.
 	_, err = e.Coerce(42, path)
@@ -577,7 +577,7 @@ func (s *MetaSuite) TestIfaceExpander(c *tc.C) {
 	e = charm.IfaceExpander(1)
 	v, err = e.Coerce(map[string]any{"interface": "http"}, path)
 	c.Assert(err, tc.IsNil)
-	c.Assert(v, tc.DeepEquals, map[string]any{"interface": "http", "limit": int64(1), "optional": false, "scope": string(charm.ScopeGlobal)})
+	c.Assert(v, tc.DeepEquals, map[string]any{"interface": "http", "limit": int64(1), "optional": false, "scope": string(charm.ScopeGlobal), "default": false})
 }
 
 func (s *MetaSuite) TestMetaHooks(c *tc.C) {
@@ -1858,4 +1858,21 @@ func (s *MetaSuite) TestStorageEqual(c *tc.C) {
 	storageNilProps := storage1
 	storageNilProps.Properties = nil
 	c.Assert(storageEmptyProps.Equal(storageNilProps), tc.IsTrue)
+}
+
+func (s *MetaSuite) TestParseMetaRelationDefault(c *tc.C) {
+	meta, err := charm.ReadMeta(strings.NewReader(`
+name: mysql
+summary: "summary"
+description: "description"
+provides:
+  certificates:
+    interface: tls-certificates
+    default: true
+  receive-ca-cert:
+    interface: tls-certificates
+`))
+	c.Assert(err, tc.IsNil)
+	c.Check(meta.Provides["certificates"].IsDefault, tc.IsTrue)
+	c.Check(meta.Provides["receive-ca-cert"].IsDefault, tc.IsFalse)
 }

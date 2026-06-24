@@ -201,6 +201,10 @@ type Relation struct {
 	Optional  bool
 	Limit     int
 	Scope     RelationScope
+
+	// IsDefault marks this endpoint as the default choice when resolving
+	// otherwise-ambiguous relations between applications.
+	IsDefault bool
 }
 
 // ImplementedBy returns whether the relation is implemented by the supplied charm.
@@ -662,7 +666,7 @@ type marshaledRelation Relation
 func (r marshaledRelation) MarshalYAML() (any, error) {
 	// See calls to ifaceExpander in charmSchema.
 	var noLimit int
-	if !r.Optional && r.Limit == noLimit && r.Scope == ScopeGlobal {
+	if !r.Optional && r.Limit == noLimit && r.Scope == ScopeGlobal && !r.IsDefault {
 		// All attributes are default, so use the simple string form of the relation.
 		return r.Interface, nil
 	}
@@ -671,9 +675,11 @@ func (r marshaledRelation) MarshalYAML() (any, error) {
 		Limit     *int          `yaml:"limit,omitempty"`
 		Optional  bool          `yaml:"optional,omitempty"`
 		Scope     RelationScope `yaml:"scope,omitempty"`
+		Default   bool          `yaml:"default,omitempty"`
 	}{
 		Interface: r.Interface,
 		Optional:  r.Optional,
+		Default:   r.IsDefault,
 	}
 	if r.Limit != noLimit {
 		mr.Limit = &r.Limit
@@ -843,6 +849,7 @@ func parseRelations(relations any, role RelationRole) map[string]Relation {
 			Role:      role,
 			Interface: relMap["interface"].(string),
 			Optional:  relMap["optional"].(bool),
+			IsDefault: relMap["default"].(bool),
 		}
 		if scope := relMap["scope"]; scope != nil {
 			relation.Scope = RelationScope(scope.(string))
@@ -908,6 +915,7 @@ func (c ifaceExpC) Coerce(v any, path []string) (newv any, err error) {
 			"limit":     c.limit,
 			"optional":  false,
 			"scope":     string(ScopeGlobal),
+			"default":   false,
 		}
 		return
 	}
@@ -929,10 +937,12 @@ var ifaceSchema = schema.FieldMap(
 		"limit":     schema.OneOf(schema.Const(nil), schema.Int()),
 		"scope":     schema.OneOf(schema.Const(string(ScopeGlobal)), schema.Const(string(ScopeContainer))),
 		"optional":  schema.Bool(),
+		"default":   schema.Bool(),
 	},
 	schema.Defaults{
 		"scope":    string(ScopeGlobal),
 		"optional": false,
+		"default":  false,
 	},
 )
 

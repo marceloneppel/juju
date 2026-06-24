@@ -427,13 +427,14 @@ type MockCharmMetadataRelation struct {
 
 // MockCharmMetadataRelationMockRecorder is the mock recorder for MockCharmMetadataRelation.
 type MockCharmMetadataRelationMockRecorder struct {
-	mock             *MockCharmMetadataRelation
-	interfaceExpects []*gomock.Call0_1[string]
-	limitExpects     []*gomock.Call0_1[int]
-	nameExpects      []*gomock.Call0_1[string]
-	optionalExpects  []*gomock.Call0_1[bool]
-	roleExpects      []*gomock.Call0_1[string]
-	scopeExpects     []*gomock.Call0_1[string]
+	mock              *MockCharmMetadataRelation
+	interfaceExpects  []*gomock.Call0_1[string]
+	isDefaultExpects  []*gomock.Call0_1[bool]
+	limitExpects      []*gomock.Call0_1[int]
+	nameExpects       []*gomock.Call0_1[string]
+	optionalExpects   []*gomock.Call0_1[bool]
+	roleExpects       []*gomock.Call0_1[string]
+	scopeExpects      []*gomock.Call0_1[string]
 }
 
 // NewMockCharmMetadataRelation creates a new mock instance.
@@ -465,6 +466,24 @@ func (mr *MockCharmMetadataRelationMockRecorder) Interface() *MockCharmMetadataR
 
 // MockCharmMetadataRelationInterfaceCall is the typed call wrapper for Interface.
 type MockCharmMetadataRelationInterfaceCall = gomock.Call0_1[string]
+
+// IsDefault mocks base method.
+func (m *MockCharmMetadataRelation) IsDefault() bool {
+	m.ctrl.T.Helper()
+	return gomock.Dispatch0_1(&m.recorder.isDefaultExpects, m.ctrl, m, "IsDefault")
+}
+
+// IsDefault indicates an expected call of IsDefault.
+func (mr *MockCharmMetadataRelationMockRecorder) IsDefault() *MockCharmMetadataRelationIsDefaultCall {
+	mr.mock.ctrl.T.Helper()
+	call := gomock.NewCall0_1[bool](mr.mock.ctrl.T, mr.mock, "IsDefault")
+	mr.isDefaultExpects = append(mr.isDefaultExpects, call)
+	mr.mock.ctrl.Track(call.Call)
+	return call
+}
+
+// MockCharmMetadataRelationIsDefaultCall is the typed call wrapper for IsDefault.
+type MockCharmMetadataRelationIsDefaultCall = gomock.Call0_1[bool]
 
 // Limit mocks base method.
 func (m *MockCharmMetadataRelation) Limit() int {

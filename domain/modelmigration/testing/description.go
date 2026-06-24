@@ -33,6 +33,7 @@ type Relation struct {
 	Role_          string
 	InterfaceName_ string
 	Optional_      bool
+	IsDefault_     bool
 	Limit_         int
 	Scope_         string
 }
@@ -51,6 +52,10 @@ func (r Relation) Interface() string {
 
 func (r Relation) Optional() bool {
 	return r.Optional_
+}
+
+func (r Relation) IsDefault() bool {
+	return r.IsDefault_
 }
 
 func (r Relation) Limit() int {

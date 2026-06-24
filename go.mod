@@ -306,3 +306,5 @@ replace gopkg.in/check.v1 => github.com/hpidcock/gc-compat-tc v0.0.0-20260112233
 replace github.com/juju/testing => ./internal/testhelpers/compat
 
 replace go.opencensus.io => github.com/census-instrumentation/opencensus-go v0.24.0
+
+replace github.com/juju/description/v12 => ../description

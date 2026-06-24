@@ -3650,10 +3650,19 @@ func (st *State) inferEndpoints(
 		}
 	}
 
-	if matchCount := len(matches); matchCount == 0 {
+	if len(matches) == 0 {
 		return Endpoint{}, Endpoint{}, relationerrors.CompatibleEndpointsNotFound
-	} else if matchCount > 1 {
-		possibleMatches := make([]string, 0, matchCount)
+	}
+
+	if len(matches) > 1 {
+		pairs := make([][2]bool, len(matches))
+		for i, m := range matches {
+			pairs[i] = [2]bool{m.ep1.IsDefault, m.ep2.IsDefault}
+		}
+		if idx, ok := charm.SelectDefaultEndpointPair(pairs); ok {
+			return *matches[idx].ep1, *matches[idx].ep2, nil
+		}
+		possibleMatches := make([]string, 0, len(matches))
 		for _, match := range matches {
 			possibleMatches = append(possibleMatches, fmt.Sprintf("\"%s %s\"", match.ep1, match.ep2))
 		}

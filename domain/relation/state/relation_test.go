@@ -899,6 +899,136 @@ func (s *addRelationSuite) TestInferEndpointsError(c *tc.C) {
 	}
 }
 
+// TestInferEndpointsResolvesSingleDefault verifies that when an otherwise-ambiguous
+// shorthand matches multiple compatible endpoint pairs, and exactly one pair has an
+// endpoint marked as default, inference resolves to that pair.
+func (s *addRelationSuite) TestInferEndpointsResolvesSingleDefault(c *tc.C) {
+	// Arrange:
+	//   ss provides two endpoints over the same "tls" interface:
+	//     - certificates (is_default=true)
+	//     - send-ca-cert (is_default=false)
+	//   pg requires one endpoint:
+	//     - certificates (is_default=false)
+	//
+	// This gives exactly two compatible pairs:
+	//   {pg:certificates, ss:certificates}   <- is_default true on ss side
+	//   {pg:certificates, ss:send-ca-cert}   <- no default
+	//
+	// SelectDefaultEndpointPair finds exactly one pair with a default-marked
+	// endpoint so inference should resolve to ss:certificates.
+	db, err := s.state.DB(c.Context())
+	c.Assert(err, tc.ErrorIsNil)
+
+	appUUIDSS := s.addApplication(c, "ss")
+	appUUIDPG := s.addApplication(c, "pg")
+
+	epSSCerts := s.addApplicationEndpointFromRelationIsDefault(c, appUUIDSS, charm.Relation{
+		Name:      "certificates",
+		Role:      charm.RoleProvider,
+		Interface: "tls",
+		Scope:     charm.ScopeGlobal,
+	}, true)
+	s.addApplicationEndpointFromRelationIsDefault(c, appUUIDSS, charm.Relation{
+		Name:      "send-ca-cert",
+		Role:      charm.RoleProvider,
+		Interface: "tls",
+		Scope:     charm.ScopeGlobal,
+	}, false)
+	s.addApplicationEndpointFromRelationIsDefault(c, appUUIDPG, charm.Relation{
+		Name:      "certificates",
+		Role:      charm.RoleRequirer,
+		Interface: "tls",
+		Scope:     charm.ScopeGlobal,
+	}, false)
+
+	identifier1 := s.newEndpointIdentifier(c, "pg")
+	identifier2 := s.newEndpointIdentifier(c, "ss")
+
+	// Act
+	var ep2 Endpoint
+	err = db.Txn(c.Context(), func(ctx context.Context, tx *sqlair.TX) error {
+		_, ep2, err = s.state.inferEndpoints(ctx, tx, identifier1, identifier2)
+		return err
+	})
+
+	// Assert: resolves to the pair containing the default-marked endpoint.
+	c.Assert(err, tc.ErrorIsNil)
+	c.Check(ep2.ApplicationEndpointUUID, tc.Equals, epSSCerts)
+	c.Check(ep2.EndpointName, tc.Equals, "certificates")
+}
+
+// TestInferEndpointsStillAmbiguousWithoutDefault verifies that the same ambiguous
+// setup without any default endpoint still returns AmbiguousRelation.
+func (s *addRelationSuite) TestInferEndpointsStillAmbiguousWithoutDefault(c *tc.C) {
+	// Arrange: same topology as TestInferEndpointsResolvesSingleDefault but with
+	// no endpoint marked as default — ambiguity must be preserved.
+	db, err := s.state.DB(c.Context())
+	c.Assert(err, tc.ErrorIsNil)
+
+	appUUIDSS := s.addApplication(c, "ss")
+	appUUIDPG := s.addApplication(c, "pg")
+
+	s.addApplicationEndpointFromRelationIsDefault(c, appUUIDSS, charm.Relation{
+		Name:      "certificates",
+		Role:      charm.RoleProvider,
+		Interface: "tls",
+		Scope:     charm.ScopeGlobal,
+	}, false)
+	s.addApplicationEndpointFromRelationIsDefault(c, appUUIDSS, charm.Relation{
+		Name:      "send-ca-cert",
+		Role:      charm.RoleProvider,
+		Interface: "tls",
+		Scope:     charm.ScopeGlobal,
+	}, false)
+	s.addApplicationEndpointFromRelationIsDefault(c, appUUIDPG, charm.Relation{
+		Name:      "certificates",
+		Role:      charm.RoleRequirer,
+		Interface: "tls",
+		Scope:     charm.ScopeGlobal,
+	}, false)
+
+	identifier1 := s.newEndpointIdentifier(c, "pg")
+	identifier2 := s.newEndpointIdentifier(c, "ss")
+
+	// Act
+	err = db.Txn(c.Context(), func(ctx context.Context, tx *sqlair.TX) error {
+		_, _, err = s.state.inferEndpoints(ctx, tx, identifier1, identifier2)
+		return err
+	})
+
+	// Assert: still ambiguous with no default.
+	c.Assert(err, tc.ErrorIs, relationerrors.AmbiguousRelation)
+}
+
+// addApplicationEndpointFromRelationIsDefault creates and associates a new
+// application endpoint based on the provided relation, with the is_default flag
+// set as specified.
+func (s *addRelationSuite) addApplicationEndpointFromRelationIsDefault(c *tc.C,
+	appUUID coreapplication.UUID,
+	relation charm.Relation,
+	isDefault bool,
+) corerelation.EndpointUUID {
+	charmUUID := s.charmByApp[appUUID]
+	charmRelationUUID := uuid.MustNewUUID()
+	relationEndpointUUID := corerelationtesting.GenEndpointUUID(c)
+
+	s.query(c, `
+INSERT INTO charm_relation (uuid, charm_uuid, name, interface, capacity, role_id, scope_id, is_default)
+SELECT ?, ?, ?, ?, ?, crr.id, crs.id, ?
+FROM charm_relation_scope crs
+JOIN charm_relation_role crr ON crr.name = ?
+WHERE crs.name = ?
+`, charmRelationUUID.String(), charmUUID.String(), relation.Name,
+		relation.Interface, relation.Limit, isDefault, relation.Role, relation.Scope)
+
+	s.query(c, `
+INSERT INTO application_endpoint (uuid, application_uuid, charm_relation_uuid, space_uuid)
+VALUES (?, ?, ?, ?)
+`, relationEndpointUUID.String(), appUUID.String(), charmRelationUUID.String(), network.AlphaSpaceId)
+
+	return relationEndpointUUID
+}
+
 // addApplication creates and adds a new application with the specified name and
 // returns its unique identifier.
 // It creates a specific charm for this application.

@@ -264,6 +264,9 @@ type Endpoint struct {
 	// ApplicationUUID is a unique identifier for the application associated
 	// with the endpoint.
 	ApplicationUUID application.UUID `db:"application_uuid"`
+	// IsDefault marks this endpoint as the default choice when resolving
+	// otherwise-ambiguous relations between applications.
+	IsDefault bool `db:"is_default"`
 }
 
 // String returns a formatted string representation combining
@@ -284,6 +287,7 @@ func (e Endpoint) toRelationEndpoint() domainrelation.Endpoint {
 			Optional:  e.Optional,
 			Limit:     e.Capacity,
 			Scope:     e.Scope,
+			IsDefault: e.IsDefault,
 		},
 	}
 }

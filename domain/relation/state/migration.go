@@ -213,6 +213,7 @@ FROM   relation r
 					Optional:        ep.Optional,
 					Limit:           ep.Capacity,
 					Scope:           ep.Scope,
+					IsDefault:       ep.IsDefault,
 				}
 
 				appSettings, err := st.getApplicationSettings(ctx, tx, ep.RelationEndpointUUID)

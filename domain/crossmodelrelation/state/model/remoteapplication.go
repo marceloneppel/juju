@@ -1583,6 +1583,9 @@ func encodeRelation(uuid string, relation charm.Relation) (setCharmRelation, err
 
 		// Also there isn't a way to express optional relations, and thus
 		// it is always false.
+
+		// IsDefault is always false for remote/consumed charm relations; there
+		// is no mechanism for a CMR endpoint to be the preferred default.
 	}, nil
 }
 

@@ -428,6 +428,7 @@ type CharmRelation struct {
 	Interface *string `db:"interface" json:"interface" yaml:"interface"`
 	Optional  *bool   `db:"optional" json:"optional" yaml:"optional"`
 	Capacity  *int64  `db:"capacity" json:"capacity" yaml:"capacity"`
+	IsDefault *bool   `db:"is_default" json:"is_default" yaml:"is_default"`
 }
 
 type CharmRelationRole struct {

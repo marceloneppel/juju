@@ -324,6 +324,7 @@ type ExportEndpoint struct {
 	Optional            bool
 	Limit               int
 	Scope               charm.RelationScope
+	IsDefault           bool
 	ApplicationSettings map[string]any
 	AllUnitSettings     map[string]map[string]any
 }

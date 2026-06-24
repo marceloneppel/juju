@@ -141,6 +141,7 @@ func decodeRelations(relations []charmRelation) (map[string]charm.Relation, map[
 			Limit:     relation.Capacity,
 			Role:      role,
 			Scope:     scope,
+			IsDefault: relation.IsDefault,
 		}, nil
 	}
 
@@ -499,6 +500,7 @@ func encodeRelation(id corecharm.ID, relation charm.Relation) (setCharmRelation,
 		Optional:  relation.Optional,
 		Capacity:  relation.Limit,
 		ScopeID:   scopeID,
+		IsDefault: relation.IsDefault,
 	}, nil
 }
 

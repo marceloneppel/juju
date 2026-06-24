@@ -180,6 +180,7 @@ type setCharmRelation struct {
 	Interface string `db:"interface"`
 	Capacity  int    `db:"capacity"`
 	ScopeID   int    `db:"scope_id"`
+	IsDefault bool   `db:"is_default"`
 }
 
 type remoteApplicationOfferer struct {

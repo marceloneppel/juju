@@ -411,7 +411,15 @@ func (s *migrationSuite) TestExportRelations(c *tc.C) {
 			Scope:     charm.ScopeGlobal,
 		},
 	}
-	charmRelationUUID1 := s.addCharmRelation(c, s.fakeCharmUUID1, endpoint1.Relation)
+	// Insert endpoint1 directly with is_default = TRUE to exercise the
+	// non-zero path through ExportRelations → ExportEndpoint.IsDefault.
+	charmRelationUUID1 := uuid.MustNewUUID().String()
+	s.query(c, `
+INSERT INTO charm_relation (uuid, charm_uuid, name, role_id, interface, optional, capacity, scope_id, is_default)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, TRUE)
+`, charmRelationUUID1, s.fakeCharmUUID1, endpoint1.Name,
+		s.encodeRoleID(endpoint1.Role), endpoint1.Interface, endpoint1.Optional,
+		endpoint1.Limit, s.encodeScopeID(endpoint1.Scope))
 	charmRelationUUID2 := s.addCharmRelation(c, s.fakeCharmUUID2, endpoint2.Relation)
 	applicationEndpointUUID1 := s.addApplicationEndpoint(c, s.fakeApplicationUUID1, charmRelationUUID1)
 	applicationEndpointUUID2 := s.addApplicationEndpoint(c, s.fakeApplicationUUID2, charmRelationUUID2)
@@ -480,6 +488,7 @@ func (s *migrationSuite) TestExportRelations(c *tc.C) {
 			Optional:        endpoint1.Optional,
 			Limit:           endpoint1.Limit,
 			Scope:           relationScope,
+			IsDefault:       true,
 			AllUnitSettings: map[string]map[string]any{
 				"app1/0": {
 					"unit1-foo": "unit1-bar",

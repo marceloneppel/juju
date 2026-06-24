@@ -1592,6 +1592,7 @@ func (s *importSuite) expectRequiresRelation() {
 	exp.Role().Return("requirer")
 	exp.Interface().Return("db")
 	exp.Optional().Return(false)
+	exp.IsDefault().Return(false)
 	exp.Limit().Return(0)
 	exp.Scope().Return("global")
 }
@@ -1602,6 +1603,7 @@ func (s *importSuite) expectProvidesRelation() {
 	exp.Role().Return("provider")
 	exp.Interface().Return("db")
 	exp.Optional().Return(true)
+	exp.IsDefault().Return(false)
 	exp.Limit().Return(1)
 	exp.Scope().Return("global")
 }
@@ -1612,6 +1614,7 @@ func (s *importSuite) expectPeersRelation() {
 	exp.Role().Return("peer")
 	exp.Interface().Return("db")
 	exp.Optional().Return(true)
+	exp.IsDefault().Return(false)
 	exp.Limit().Return(1)
 	exp.Scope().Return("container")
 }

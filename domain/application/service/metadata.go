@@ -115,6 +115,7 @@ func decodeMetadataRelation(relations map[string]charm.Relation) (map[string]int
 			Interface: v.Interface,
 			Optional:  v.Optional,
 			Limit:     v.Limit,
+			IsDefault: v.IsDefault,
 		}
 	}
 	return result, nil
@@ -426,6 +427,7 @@ func encodeMetadataRelation(relations map[string]internalcharm.Relation) (map[st
 			Interface: v.Interface,
 			Optional:  v.Optional,
 			Limit:     v.Limit,
+			IsDefault: v.IsDefault,
 		}
 	}
 	return result, nil

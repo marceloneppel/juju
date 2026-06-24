@@ -802,6 +802,7 @@ func importRelations(data map[string]description.CharmMetadataRelation) (map[str
 			Optional:  rel.Optional(),
 			Limit:     rel.Limit(),
 			Scope:     scope,
+			IsDefault: rel.IsDefault(),
 		}
 	}
 	return relations, nil

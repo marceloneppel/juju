@@ -430,6 +430,7 @@ type charmRelation struct {
 	Optional  bool   `db:"optional"`
 	Capacity  int    `db:"capacity"`
 	Scope     string `db:"scope"`
+	IsDefault bool   `db:"is_default"`
 }
 
 // charmRelationName represents is used to fetch relation of a charm when only
@@ -449,6 +450,7 @@ type setCharmRelation struct {
 	Optional  bool   `db:"optional"`
 	Capacity  int    `db:"capacity"`
 	ScopeID   int    `db:"scope_id"`
+	IsDefault bool   `db:"is_default"`
 }
 
 // relationInfo represents metadata and configuration details for an existing

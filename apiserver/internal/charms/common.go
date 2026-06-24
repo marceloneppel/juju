@@ -253,6 +253,7 @@ func convertCharmRelation(relation charm.Relation) params.CharmRelation {
 		Optional:  relation.Optional,
 		Limit:     relation.Limit,
 		Scope:     string(relation.Scope),
+		IsDefault: relation.IsDefault,
 	}
 }
 

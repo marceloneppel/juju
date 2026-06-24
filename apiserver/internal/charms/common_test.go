@@ -26,6 +26,11 @@ func TestExportSuite(t *testing.T) {
 	tc.Run(t, &exportSuite{})
 }
 
+func (s *exportSuite) TestConvertCharmRelationIsDefault(c *tc.C) {
+	out := convertCharmRelation(internalcharm.Relation{Name: "certificates", IsDefault: true})
+	c.Check(out.IsDefault, tc.IsTrue)
+}
+
 func (s *exportSuite) TestExport(c *tc.C) {
 	// Ensure that we can export a full charm.
 

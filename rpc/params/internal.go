@@ -435,6 +435,7 @@ func NewCharmRelation(cr charm.Relation) CharmRelation {
 		Optional:  cr.Optional,
 		Limit:     cr.Limit,
 		Scope:     string(cr.Scope),
+		IsDefault: cr.IsDefault,
 	}
 }
 

@@ -765,6 +765,19 @@ func (m Meta) Check(format Format, reasons ...FormatSelectionReason) error {
 		}
 	}
 
+	// A default flag only disambiguates when at least one endpoint of a
+	// (role, interface) set is left unmarked. Marking them all is a charm
+	// author mistake and provides no disambiguation.
+	for role, relations := range map[string]map[string]Relation{
+		"provides": m.Provides,
+		"requires": m.Requires,
+		"peers":    m.Peers,
+	} {
+		if err := validateDefaultEndpoints(m.Name, role, relations); err != nil {
+			return err
+		}
+	}
+
 	names := make(map[string]bool)
 	for name, store := range m.Storage {
 		if store.Location != "" && store.Type != StorageFilesystem {
@@ -811,6 +824,30 @@ func (m Meta) Check(format Format, reasons ...FormatSelectionReason) error {
 		}
 	}
 
+	return nil
+}
+
+// validateDefaultEndpoints rejects metadata where every endpoint of a
+// (role, interface) set with more than one endpoint is marked default, which
+// is contradictory: it provides no disambiguation.
+func validateDefaultEndpoints(charmName, role string, relations map[string]Relation) error {
+	byInterface := make(map[string][]string)
+	defaultByInterface := make(map[string]int)
+	for name, rel := range relations {
+		byInterface[rel.Interface] = append(byInterface[rel.Interface], name)
+		if rel.IsDefault {
+			defaultByInterface[rel.Interface]++
+		}
+	}
+	for iface, names := range byInterface {
+		if len(names) > 1 && defaultByInterface[iface] == len(names) {
+			sort.Strings(names)
+			return internalerrors.Errorf(
+				"charm %q %s endpoints %v sharing interface %q are all marked as default",
+				charmName, role, names, iface,
+			)
+		}
+	}
 	return nil
 }
 

@@ -1860,6 +1860,41 @@ func (s *MetaSuite) TestStorageEqual(c *tc.C) {
 	c.Assert(storageEmptyProps.Equal(storageNilProps), tc.IsTrue)
 }
 
+func (s *MetaSuite) TestCheckDefaultAllMarked(c *tc.C) {
+	meta, err := charm.ReadMeta(strings.NewReader(`
+name: mysql
+summary: "s"
+description: "d"
+provides:
+  a:
+    interface: tls-certificates
+    default: true
+  b:
+    interface: tls-certificates
+    default: true
+`))
+	c.Assert(err, tc.IsNil)
+	err = meta.Check(charm.FormatV2, charm.SelectionManifest)
+	c.Assert(err, tc.ErrorMatches, `.*sharing interface "tls-certificates" are all marked as default.*`)
+}
+
+func (s *MetaSuite) TestCheckDefaultSingleOK(c *tc.C) {
+	meta, err := charm.ReadMeta(strings.NewReader(`
+name: mysql
+summary: "s"
+description: "d"
+provides:
+  a:
+    interface: tls-certificates
+    default: true
+  b:
+    interface: tls-certificates
+`))
+	c.Assert(err, tc.IsNil)
+	err = meta.Check(charm.FormatV2, charm.SelectionManifest)
+	c.Assert(err, tc.IsNil)
+}
+
 func (s *MetaSuite) TestParseMetaRelationDefault(c *tc.C) {
 	meta, err := charm.ReadMeta(strings.NewReader(`
 name: mysql

@@ -1,0 +1,12 @@
+name: relation-default-requirer
+summary: "Test requirer for the relation default flag (juju #19615)"
+description: |
+  Requires two endpoints on the "shared" interface. certs-main is marked
+  default, so `juju integrate` shorthand resolves to it instead of erroring
+  ambiguous.
+requires:
+  certs-main:
+    interface: shared
+    default: true
+  certs-extra:
+    interface: shared

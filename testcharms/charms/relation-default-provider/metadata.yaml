@@ -1,0 +1,8 @@
+name: relation-default-provider
+summary: "Test provider for the relation default flag (juju #19615)"
+description: |
+  Provides a single endpoint on the "shared" interface, so that a requirer
+  with two compatible endpoints exercises ambiguous-shorthand resolution.
+provides:
+  certs:
+    interface: shared

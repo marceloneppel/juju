@@ -1,0 +1,12 @@
+name: relation-default-invalid
+summary: "Test charm with contradictory default flags (juju #19615)"
+description: |
+  Two requires endpoints on the "shared" interface, both marked default.
+  Meta.Check must reject this at deploy time.
+requires:
+  a:
+    interface: shared
+    default: true
+  b:
+    interface: shared
+    default: true

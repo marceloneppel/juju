@@ -17,6 +17,7 @@ test_relations() {
 	test_relation_departing_unit
 	test_relation_list_app
 	test_relation_model_get
+	test_relation_default_endpoint
 
 	destroy_controller "test-relations"
 }

@@ -1,0 +1,5 @@
+#!/bin/sh
+# No-op charm for relation-inference tests: mark active so the unit reaches
+# active/idle, which the test suite's idle_condition waits for.
+status-set active 2>/dev/null || true
+exit 0

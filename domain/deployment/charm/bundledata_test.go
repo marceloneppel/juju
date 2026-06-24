@@ -1531,3 +1531,66 @@ relations:
 	})
 
 }
+
+// TestInferEndpointsResolvesSingleDefault verifies that when there are
+// multiple compatible candidate pairs but exactly one of them has a default
+// endpoint, inferEndpoints resolves to that default pair.
+//
+// Fixture: pg requires "modern" (interface "db", default=true) and "legacy"
+// (interface "db-old"); ss provides "modern" (interface "db") and "legacy"
+// (interface "db-old"). This yields exactly two candidate pairs — (modern,
+// modern) on "db" and (legacy, legacy) on "db-old" — of which only the first
+// contains a default endpoint. SelectDefaultEndpointPair picks that pair.
+func (s *bundleDataSuite) TestInferEndpointsResolvesSingleDefault(c *tc.C) {
+	get := func(svc string) (*charm.Meta, error) {
+		switch svc {
+		case "pg":
+			return &charm.Meta{Name: "pg", Requires: map[string]charm.Relation{
+				"modern": {Name: "modern", Role: charm.RoleRequirer, Interface: "db", IsDefault: true},
+				"legacy": {Name: "legacy", Role: charm.RoleRequirer, Interface: "db-old"},
+			}}, nil
+		case "ss":
+			return &charm.Meta{Name: "ss", Provides: map[string]charm.Relation{
+				"modern": {Name: "modern", Role: charm.RoleProvider, Interface: "db"},
+				"legacy": {Name: "legacy", Role: charm.RoleProvider, Interface: "db-old"},
+			}}, nil
+		}
+		return nil, fmt.Errorf("unknown %q", svc)
+	}
+	ep0, ep1, err := charm.InferEndpointsForTest(
+		charm.BundleEndpoint{Application: "pg"},
+		charm.BundleEndpoint{Application: "ss"},
+		get,
+	)
+	c.Assert(err, tc.IsNil)
+	// The default endpoint "modern" should be selected; verify both endpoints
+	// resolved to the modern pair regardless of ordering.
+	c.Check(ep0.Relation, tc.Equals, "modern")
+	c.Check(ep1.Relation, tc.Equals, "modern")
+}
+
+// TestInferEndpointsStillAmbiguousWithoutDefault verifies that when no default
+// is set among the candidates, the ambiguity error is still returned.
+func (s *bundleDataSuite) TestInferEndpointsStillAmbiguousWithoutDefault(c *tc.C) {
+	get := func(svc string) (*charm.Meta, error) {
+		switch svc {
+		case "pg":
+			return &charm.Meta{Name: "pg", Requires: map[string]charm.Relation{
+				"modern": {Name: "modern", Role: charm.RoleRequirer, Interface: "db"},
+				"legacy": {Name: "legacy", Role: charm.RoleRequirer, Interface: "db-old"},
+			}}, nil
+		case "ss":
+			return &charm.Meta{Name: "ss", Provides: map[string]charm.Relation{
+				"modern": {Name: "modern", Role: charm.RoleProvider, Interface: "db"},
+				"legacy": {Name: "legacy", Role: charm.RoleProvider, Interface: "db-old"},
+			}}, nil
+		}
+		return nil, fmt.Errorf("unknown %q", svc)
+	}
+	_, _, err := charm.InferEndpointsForTest(
+		charm.BundleEndpoint{Application: "pg"},
+		charm.BundleEndpoint{Application: "ss"},
+		get,
+	)
+	c.Assert(err, tc.ErrorMatches, `ambiguous relation:.*`)
+}

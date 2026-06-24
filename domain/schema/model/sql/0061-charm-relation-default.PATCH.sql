@@ -1,3 +1,6 @@
+-- Patch 0061: Add the is_default column to charm_relation and surface it on the
+-- relation views.
+--
 -- Merge-forward note: when merging to the next major version, fold these
 -- changes into the base DDL instead of keeping this PATCH file:
 --   0015-charm.sql: add "is_default BOOLEAN DEFAULT FALSE" to charm_relation

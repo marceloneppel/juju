@@ -65,10 +65,7 @@ type CharmRelation struct {
 	Optional  bool   `json:"optional"`
 	Limit     int    `json:"limit"`
 	Scope     string `json:"scope"`
-
-	// IsDefault marks this endpoint as the default choice when resolving
-	// otherwise-ambiguous relations between applications.
-	IsDefault bool `json:"is-default"`
+	IsDefault bool   `json:"is-default"`
 }
 
 // CharmStorage mirrors charm.Storage.

@@ -201,9 +201,6 @@ type Relation struct {
 	Optional  bool
 	Limit     int
 	Scope     RelationScope
-
-	// IsDefault marks this endpoint as the default choice when resolving
-	// otherwise-ambiguous relations between applications.
 	IsDefault bool
 }
 

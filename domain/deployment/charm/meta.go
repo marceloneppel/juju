@@ -845,7 +845,7 @@ func validateDefaultEndpoints(charmName, role string, relations map[string]Relat
 			return internalerrors.Errorf(
 				"charm %q %s endpoints %v sharing interface %q are all marked as default",
 				charmName, role, names, iface,
-			)
+			).Add(coreerrors.NotValid)
 		}
 	}
 	return nil

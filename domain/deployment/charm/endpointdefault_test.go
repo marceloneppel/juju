@@ -1,10 +1,23 @@
-package charm
+// Copyright 2026 Canonical Ltd.
+// Licensed under the AGPLv3, see LICENCE file for details.
+
+package charm_test
 
 import (
 	"testing"
+
+	"github.com/juju/tc"
+
+	"github.com/juju/juju/domain/deployment/charm"
 )
 
-func TestSelectDefaultEndpointPair(t *testing.T) {
+type endpointDefaultSuite struct{}
+
+func TestEndpointDefaultSuite(t *testing.T) {
+	tc.Run(t, &endpointDefaultSuite{})
+}
+
+func (s *endpointDefaultSuite) TestSelectDefaultEndpointPair(c *tc.C) {
 	cases := []struct {
 		name    string
 		pairs   [][2]bool
@@ -18,10 +31,11 @@ func TestSelectDefaultEndpointPair(t *testing.T) {
 		{"multiple", [][2]bool{{true, false}, {false, true}}, 0, false},
 		{"empty", [][2]bool{}, 0, false},
 	}
-	for _, tc := range cases {
-		idx, ok := SelectDefaultEndpointPair(tc.pairs)
-		if ok != tc.wantOK || (ok && idx != tc.wantIdx) {
-			t.Errorf("%s: got (%d,%v), want (%d,%v)", tc.name, idx, ok, tc.wantIdx, tc.wantOK)
+	for _, test := range cases {
+		idx, ok := charm.SelectDefaultEndpointPair(test.pairs)
+		c.Check(ok, tc.Equals, test.wantOK, tc.Commentf("%s", test.name))
+		if test.wantOK {
+			c.Check(idx, tc.Equals, test.wantIdx, tc.Commentf("%s", test.name))
 		}
 	}
 }

@@ -427,14 +427,14 @@ type MockCharmMetadataRelation struct {
 
 // MockCharmMetadataRelationMockRecorder is the mock recorder for MockCharmMetadataRelation.
 type MockCharmMetadataRelationMockRecorder struct {
-	mock              *MockCharmMetadataRelation
-	interfaceExpects  []*gomock.Call0_1[string]
-	isDefaultExpects  []*gomock.Call0_1[bool]
-	limitExpects      []*gomock.Call0_1[int]
-	nameExpects       []*gomock.Call0_1[string]
-	optionalExpects   []*gomock.Call0_1[bool]
-	roleExpects       []*gomock.Call0_1[string]
-	scopeExpects      []*gomock.Call0_1[string]
+	mock             *MockCharmMetadataRelation
+	interfaceExpects []*gomock.Call0_1[string]
+	isDefaultExpects []*gomock.Call0_1[bool]
+	limitExpects     []*gomock.Call0_1[int]
+	nameExpects      []*gomock.Call0_1[string]
+	optionalExpects  []*gomock.Call0_1[bool]
+	roleExpects      []*gomock.Call0_1[string]
+	scopeExpects     []*gomock.Call0_1[string]
 }
 
 // NewMockCharmMetadataRelation creates a new mock instance.

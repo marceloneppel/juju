@@ -1235,18 +1235,14 @@ func inferEndpoints(epSpec0, epSpec1 endpoint, get func(svc string) (*Meta, erro
 	if len(filtered) == 1 {
 		return filtered[0][0].endpoint(), filtered[0][1].endpoint(), nil
 	}
-	// There's still ambiguity; try the per-endpoint default flag. Resolve over
-	// the non-implicit candidates so an implicit relation can never be selected.
-	pool := filtered
-	if len(pool) == 0 {
-		pool = candidates
-	}
-	pairs := make([][2]bool, len(pool))
-	for i, cand := range pool {
+	// There's still ambiguity; try the per-endpoint default flag over the
+	// non-implicit candidates, so an implicit relation can never be selected.
+	pairs := make([][2]bool, len(filtered))
+	for i, cand := range filtered {
 		pairs[i] = [2]bool{cand[0].IsDefault, cand[1].IsDefault}
 	}
 	if idx, ok := SelectDefaultEndpointPair(pairs); ok {
-		return pool[idx][0].endpoint(), pool[idx][1].endpoint(), nil
+		return filtered[idx][0].endpoint(), filtered[idx][1].endpoint(), nil
 	}
 	// The ambiguity cannot be resolved, so return an error.
 	var keys []string

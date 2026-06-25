@@ -997,7 +997,7 @@ func (s *addRelationSuite) TestInferEndpointsStillAmbiguousWithoutDefault(c *tc.
 	})
 
 	// Assert: still ambiguous with no default.
-	c.Assert(err, tc.ErrorIs, relationerrors.AmbiguousRelation)
+	c.Check(err, tc.ErrorIs, relationerrors.AmbiguousRelation)
 }
 
 // addApplicationEndpointFromRelationIsDefault creates and associates a new

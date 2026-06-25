@@ -1592,5 +1592,5 @@ func (s *bundleDataSuite) TestInferEndpointsStillAmbiguousWithoutDefault(c *tc.C
 		charm.BundleEndpoint{Application: "ss"},
 		get,
 	)
-	c.Assert(err, tc.ErrorMatches, `ambiguous relation:.*`)
+	c.Check(err, tc.ErrorMatches, `ambiguous relation:.*`)
 }

@@ -1876,6 +1876,7 @@ provides:
 	c.Assert(err, tc.IsNil)
 	err = meta.Check(charm.FormatV2, charm.SelectionManifest)
 	c.Assert(err, tc.ErrorMatches, `.*sharing interface "tls-certificates" are all marked as default.*`)
+	c.Assert(err, tc.ErrorIs, coreerrors.NotValid)
 }
 
 func (s *MetaSuite) TestCheckDefaultSingleOK(c *tc.C) {

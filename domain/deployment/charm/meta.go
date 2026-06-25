@@ -828,6 +828,9 @@ func (m Meta) Check(format Format, reasons ...FormatSelectionReason) error {
 // (role, interface) set with more than one endpoint is marked default, which
 // is contradictory: it provides no disambiguation.
 func validateDefaultEndpoints(charmName, role string, relations map[string]Relation) error {
+	if len(relations) <= 1 {
+		return nil
+	}
 	byInterface := make(map[string][]string)
 	defaultByInterface := make(map[string]int)
 	for name, rel := range relations {

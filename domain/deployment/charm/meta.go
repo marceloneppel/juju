@@ -824,27 +824,26 @@ func (m Meta) Check(format Format, reasons ...FormatSelectionReason) error {
 	return nil
 }
 
-// validateDefaultEndpoints rejects metadata where every endpoint of a
-// (role, interface) set with more than one endpoint is marked default, which
-// is contradictory: it provides no disambiguation.
+// validateDefaultEndpoints rejects metadata where more than one endpoint of a
+// (role, interface) set is marked default. Only one endpoint of a compatible
+// set may be the default; more than one provides no disambiguation and would
+// leave "juju integrate" ambiguous.
 func validateDefaultEndpoints(charmName, role string, relations map[string]Relation) error {
 	if len(relations) <= 1 {
 		return nil
 	}
-	byInterface := make(map[string][]string)
-	defaultByInterface := make(map[string]int)
+	defaults := make(map[string][]string)
 	for name, rel := range relations {
-		byInterface[rel.Interface] = append(byInterface[rel.Interface], name)
 		if rel.IsDefault {
-			defaultByInterface[rel.Interface]++
+			defaults[rel.Interface] = append(defaults[rel.Interface], name)
 		}
 	}
-	for iface, names := range byInterface {
-		if len(names) > 1 && defaultByInterface[iface] == len(names) {
+	for iface, names := range defaults {
+		if len(names) > 1 {
 			sort.Strings(names)
 			return internalerrors.Errorf(
-				"charm %q %s endpoints %v sharing interface %q are all marked as default",
-				charmName, role, names, iface,
+				"charm %q has more than one %s endpoint marked as default for interface %q: %v",
+				charmName, role, iface, names,
 			).Add(coreerrors.NotValid)
 		}
 	}

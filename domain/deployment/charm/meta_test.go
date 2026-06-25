@@ -1875,7 +1875,7 @@ provides:
 `))
 	c.Assert(err, tc.IsNil)
 	err = meta.Check(charm.FormatV2, charm.SelectionManifest)
-	c.Check(err, tc.ErrorMatches, `.*sharing interface "tls-certificates" are all marked as default.*`)
+	c.Check(err, tc.ErrorMatches, `.*more than one provides endpoint marked as default for interface "tls-certificates".*`)
 	c.Check(err, tc.ErrorIs, coreerrors.NotValid)
 }
 
@@ -1894,6 +1894,27 @@ provides:
 	c.Assert(err, tc.IsNil)
 	err = meta.Check(charm.FormatV2, charm.SelectionManifest)
 	c.Assert(err, tc.IsNil)
+}
+
+func (s *MetaSuite) TestCheckDefaultMoreThanOne(c *tc.C) {
+	meta, err := charm.ReadMeta(strings.NewReader(`
+name: mysql
+summary: "s"
+description: "d"
+provides:
+  a:
+    interface: tls-certificates
+    default: true
+  b:
+    interface: tls-certificates
+    default: true
+  c:
+    interface: tls-certificates
+`))
+	c.Assert(err, tc.IsNil)
+	err = meta.Check(charm.FormatV2, charm.SelectionManifest)
+	c.Check(err, tc.ErrorMatches, `.*more than one provides endpoint marked as default for interface "tls-certificates".*`)
+	c.Check(err, tc.ErrorIs, coreerrors.NotValid)
 }
 
 func (s *MetaSuite) TestParseMetaRelationDefault(c *tc.C) {

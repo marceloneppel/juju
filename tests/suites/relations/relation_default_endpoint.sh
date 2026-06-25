@@ -40,12 +40,12 @@ run_relation_default_endpoint() {
 	juju integrate certs-provider:certs db-app:certs-extra
 	wait_for "certs-extra" '.applications."db-app".relations | keys | .[]'
 
-	# Meta.Check rejects a charm whose every endpoint of a (role, interface) set is
-	# marked default, since that provides no disambiguation.
-	echo "A charm with all endpoints default is rejected at deploy time"
+	# Meta.Check rejects a charm with more than one default endpoint in a
+	# (role, interface) set, since that provides no disambiguation.
+	echo "A charm with more than one default endpoint is rejected at deploy time"
 	# shellcheck disable=SC2046
 	got=$(juju deploy $(pack_charm ./testcharms/charms/relation-default-invalid) invalid 2>&1 || true)
-	check_contains "${got}" "are all marked as default"
+	check_contains "${got}" "more than one requires endpoint marked as default"
 
 	destroy_model "${model_name}"
 }

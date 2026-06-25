@@ -1111,30 +1111,7 @@ func (s *addRelationSuite) addApplicationEndpoint(
 func (s *addRelationSuite) addApplicationEndpointFromRelation(c *tc.C,
 	appUUID coreapplication.UUID,
 	relation charm.Relation) corerelation.EndpointUUID {
-
-	// Generate and get required UUIDs
-	charmUUID := s.charmByApp[appUUID]
-	// todo(gfouillet) introduce proper generation for this uuid
-	charmRelationUUID := uuid.MustNewUUID()
-	relationEndpointUUID := corerelationtesting.GenEndpointUUID(c)
-
-	// Add relation to charm
-	s.query(c, `
-INSERT INTO charm_relation (uuid, charm_uuid, name, interface, capacity, role_id,  scope_id)
-SELECT ?, ?, ?, ?, ?, crr.id, crs.id
-FROM charm_relation_scope crs
-JOIN charm_relation_role crr ON crr.name = ?
-WHERE crs.name = ?
-`, charmRelationUUID.String(), charmUUID.String(), relation.Name,
-		relation.Interface, relation.Limit, relation.Role, relation.Scope)
-
-	// application endpoint
-	s.query(c, `
-INSERT INTO application_endpoint (uuid, application_uuid, charm_relation_uuid,space_uuid)
-VALUES (?,?,?,?)
-`, relationEndpointUUID.String(), appUUID.String(), charmRelationUUID.String(), network.AlphaSpaceId)
-
-	return relationEndpointUUID
+	return s.addApplicationEndpointFromRelationIsDefault(c, appUUID, relation, false)
 }
 
 type relationSuite struct {
